@@ -1,4 +1,4 @@
-use cg::prelude::*;
+use std::f32;
 
 use Vec3;
 
@@ -6,18 +6,16 @@ use Vec3;
 pub struct Ray {
     pub o: Vec3,
     pub d: Vec3,
+    pub t_max: f32,
 }
 
 impl Ray {
-    pub fn zero() -> Ray {
-        Ray {
-            o: Vec3::zero(),
-            d: Vec3::zero(),
-        }
-    }
-
     pub fn new(o: Vec3, d: Vec3) -> Ray {
-        Ray { o, d }
+        Ray {
+            o,
+            d,
+            t_max: f32::INFINITY,
+        }
     }
 
     pub fn at(&self, t: f32) -> Vec3 {
