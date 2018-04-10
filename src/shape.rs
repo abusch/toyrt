@@ -1,12 +1,16 @@
+use std::sync::Arc;
+
 use cg::prelude::*;
 
 use Vec3;
+use material::Material;
 use ray::Ray;
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Hit {
     pub p: Vec3,
     pub n: Vec3,
+    pub mat: Arc<Material>,
 }
 
 pub trait Shape {
@@ -16,11 +20,16 @@ pub trait Shape {
 pub struct Sphere {
     pub centre: Vec3,
     pub radius: f32,
+    pub material: Arc<Material>,
 }
 
 impl Sphere {
-    pub fn new(centre: Vec3, radius: f32) -> Sphere {
-        Sphere { centre, radius }
+    pub fn new(centre: Vec3, radius: f32, material: Arc<Material>) -> Sphere {
+        Sphere {
+            centre,
+            radius,
+            material,
+        }
     }
 }
 
@@ -42,7 +51,11 @@ impl Shape for Sphere {
                 let n = (&p - self.centre).normalize();
                 ray.t_max = t;
 
-                Some(Hit { p, n })
+                Some(Hit {
+                    p,
+                    n,
+                    mat: self.material.clone(),
+                })
             } else {
                 None
             }
@@ -59,20 +72,5 @@ impl Shape for Aggregation {
         self.shapes
             .iter()
             .fold(None, |prev_hit, shape| shape.intersect(ray).or(prev_hit))
-
-        // let mut current_hit: Option<Hit> = None;
-        // for shape in &self.shapes {
-        //     if let Some(hit) = shape.intersect(tmin, tmax, ray) {
-        //         if let Some(previous_hit) = current_hit.as_ref() {
-        //             if hit.t < previous_hit.t {
-        //                 current_hit = Some(hit);
-        //             }
-        //         } else {
-        //             current_hit = Some(hit);
-        //         }
-        //     }
-        // }
-
-        // current_hit
     }
 }
