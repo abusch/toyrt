@@ -2,9 +2,9 @@ use std::sync::Arc;
 
 use cg::prelude::*;
 
-use Vec3;
 use material::Material;
 use ray::Ray;
+use Vec3;
 
 #[derive(Clone)]
 pub struct Hit {
@@ -48,7 +48,7 @@ impl Shape for Sphere {
             let t = (-b - discr) / (2.0 * a);
             if t >= 0.0 && t <= ray.t_max {
                 let p = ray.at(t);
-                let n = (&p - self.centre).normalize();
+                let n = (p - self.centre).normalize();
                 ray.t_max = t;
 
                 Some(Hit {

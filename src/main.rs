@@ -50,21 +50,22 @@ fn main() {
     let ns = 100;
     let mut rng = rand::thread_rng();
 
-    let diffuse: Arc<Material> = Arc::new(Diffuse::new(vec3(0.5, 0.5, 0.5)));
+    let diffuse1: Arc<Material> = Arc::new(Diffuse::new(vec3(0.8, 0.3, 0.3)));
+    let diffuse2: Arc<Material> = Arc::new(Diffuse::new(vec3(0.8, 0.8, 0.0)));
     let world = Aggregation {
         shapes: vec![
-            Box::new(Sphere::new(vec3(0.0, 0.0, -1.0), 0.5, diffuse.clone())),
+            Box::new(Sphere::new(vec3(0.0, 0.0, -1.0), 0.5, diffuse1.clone())),
             Box::new(Sphere::new(
-                vec3(0.0, -1000.5, -1.0),
-                1000.0,
-                diffuse.clone(),
+                vec3(0.0, -100.5, -1.0),
+                100.0,
+                diffuse2.clone(),
             )),
         ],
     };
     for y in 0..NY {
         for x in 0..NX {
             let mut col = Vec3::zero();
-            for s in 0..ns {
+            for _ in 0..ns {
                 let u = (((x as f32 + rng.next_f32()) / NX as f32) * 2.0 - 1.0) * ratio;
                 let v = (((NY - y) as f32 + rng.next_f32()) / NY as f32) * 2.0 - 1.0;
                 let mut ray = Ray::new(Vec3::zero(), vec3(u, v, -1.0));
@@ -82,7 +83,7 @@ fn write_img(img: &[Vec3]) {
     let file = File::create("out.ppm").expect("Could not create out.ppm");
     let mut out = BufWriter::new(file);
 
-    writeln!(out, "P3 {} {}\n{}", NX, NY, 255).unwrap();
+    writeln!(out, "P3 {} {}\n255", NX, NY).unwrap();
     for y in 0..NY {
         for x in 0..NX {
             let (r, g, b) = img[y * NX + x].into();

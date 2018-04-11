@@ -3,9 +3,9 @@ use std::f32;
 use cg::vec3;
 use rand::{self, Rng};
 
-use Vec3;
 use ray::Ray;
 use shape::*;
+use Vec3;
 
 #[derive(Debug)]
 pub struct ScatteringEvent {
@@ -33,10 +33,19 @@ impl Material for Diffuse {
         let mut rng = rand::thread_rng();
         let u = rng.next_f32();
         let v = rng.next_f32();
-        let out_dir = uniform_sample_hemisphere(u, v);
+
+        // With uniform hemisphere distribution
+        let out_dir = uniform_sample_hemisphere(u, v, &hit.n);
+        let f = self.albedo * f32::consts::FRAC_1_PI;
+        let pdf = 0.5 * f32::consts::FRAC_1_PI;
+
+        // With cosine-weight hemisphere distribution
+        // let out_dir = cosine_sample_hemisphere(u, v, &hit.n);
+        // let f = self.albedo * f32::consts::FRAC_1_PI;
+        // let pdf = out_dir.dot(hit.n).abs() * f32::consts::FRAC_1_PI;
 
         // Compute attenuation
-        let attenuation = self.albedo;
+        let attenuation = f / pdf;
 
         Some(ScatteringEvent {
             r_out: Ray::new(hit.p + 0.001 * hit.n, out_dir),
@@ -45,10 +54,54 @@ impl Material for Diffuse {
     }
 }
 
-fn uniform_sample_hemisphere(u: f32, v: f32) -> Vec3 {
+#[allow(dead_code)]
+fn uniform_sample_hemisphere(u: f32, v: f32, n: &Vec3) -> Vec3 {
+    // Build an orthogonal coordinate system based around the normal
+    let (tangent, bitangent) = coordinate_system(n);
+
     let z = u;
     let r = (1.0 - z * z).max(0.0).sqrt();
     let phi = 2.0 * f32::consts::PI * v;
+    let x = r * phi.cos();
+    let y = r * phi.sin();
 
-    vec3(r * phi.cos(), r * phi.sin(), z)
+    // Transform generated vector back into world space
+    vec3(
+        bitangent.x * x + tangent.x * y + n.x * z,
+        bitangent.y * x + tangent.y * y + n.y * z,
+        bitangent.z * x + tangent.z * y + n.z * z,
+    )
+}
+
+#[allow(dead_code)]
+fn cosine_sample_hemisphere(u: f32, v: f32, n: &Vec3) -> Vec3 {
+    // Build an orthogonal coordinate system based around the normal
+    let (tangent, bitangent) = coordinate_system(n);
+
+    // Generate a random direction in local coordinate space
+    let r = f32::sqrt(u);
+    let theta = 2.0 * f32::consts::PI * v;
+    let x = r * f32::cos(theta);
+    let y = r * f32::sin(theta);
+    let z = f32::sqrt(f32::max(0.0, 1.0 - u));
+
+    // Transform generated vector back into world space
+    vec3(
+        bitangent.x * x + tangent.x * y + n.x * z,
+        bitangent.y * x + tangent.y * y + n.y * z,
+        bitangent.z * x + tangent.z * y + n.z * z,
+    )
+}
+
+/// Create an orthogonal coordinate system from a single vector.
+fn coordinate_system(v1: &Vec3) -> (Vec3, Vec3) {
+    let v2 = if v1.x.abs() > v1.y.abs() {
+        vec3(-v1.z, 0.0, v1.x) / (v1.x * v1.x + v1.z * v1.z).sqrt()
+    } else {
+        vec3(0.0, v1.z, -v1.y) / (v1.y * v1.y + v1.z * v1.z).sqrt()
+    };
+
+    let v3 = v1.cross(v2);
+
+    (v2, v3)
 }
