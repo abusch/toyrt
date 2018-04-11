@@ -50,25 +50,24 @@ fn main() {
     let ns = 100;
     let mut rng = rand::thread_rng();
 
-    let diffuse1: Arc<Material> = Arc::new(Diffuse::new(vec3(0.8, 0.3, 0.3)));
-    let diffuse2: Arc<Material> = Arc::new(Diffuse::new(vec3(0.8, 0.8, 0.0)));
+    let ground: Arc<Material> = Arc::new(Diffuse::new(vec3(0.8, 0.8, 0.0)));
+    let diffuse: Arc<Material> = Arc::new(Diffuse::new(vec3(0.8, 0.3, 0.3)));
+    let mirror: Arc<Material> = Arc::new(Mirror);
     let world = Aggregation {
         shapes: vec![
-            Box::new(Sphere::new(vec3(0.0, 0.0, -1.0), 0.5, diffuse1.clone())),
-            Box::new(Sphere::new(
-                vec3(0.0, -100.5, -1.0),
-                100.0,
-                diffuse2.clone(),
-            )),
+            Box::new(Sphere::new(vec3(-1.0, 0.0, -1.0), 0.5, mirror.clone())),
+            Box::new(Sphere::new(vec3(0.0, 0.0, -1.0), 0.5, diffuse.clone())),
+            Box::new(Sphere::new(vec3(0.0, -100.5, -1.0), 100.0, ground.clone())),
         ],
     };
+    let camera_centre = vec3(0.0, 0.0, 0.5);
     for y in 0..NY {
         for x in 0..NX {
             let mut col = Vec3::zero();
             for _ in 0..ns {
                 let u = (((x as f32 + rng.next_f32()) / NX as f32) * 2.0 - 1.0) * ratio;
                 let v = (((NY - y) as f32 + rng.next_f32()) / NY as f32) * 2.0 - 1.0;
-                let mut ray = Ray::new(Vec3::zero(), vec3(u, v, -1.0));
+                let mut ray = Ray::new(camera_centre, vec3(u, v, -1.0));
                 col += colour(&world, &mut ray, 0);
             }
 

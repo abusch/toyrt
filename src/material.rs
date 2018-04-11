@@ -1,6 +1,6 @@
 use std::f32;
 
-use cg::vec3;
+use cg::{prelude::*, vec3};
 use rand::{self, Rng};
 
 use ray::Ray;
@@ -35,14 +35,14 @@ impl Material for Diffuse {
         let v = rng.next_f32();
 
         // With uniform hemisphere distribution
-        let out_dir = uniform_sample_hemisphere(u, v, &hit.n);
-        let f = self.albedo * f32::consts::FRAC_1_PI;
-        let pdf = 0.5 * f32::consts::FRAC_1_PI;
+        // let out_dir = uniform_sample_hemisphere(u, v, &hit.n);
+        // let f = self.albedo * f32::consts::FRAC_1_PI;
+        // let pdf = 0.5 * f32::consts::FRAC_1_PI;
 
         // With cosine-weight hemisphere distribution
-        // let out_dir = cosine_sample_hemisphere(u, v, &hit.n);
-        // let f = self.albedo * f32::consts::FRAC_1_PI;
-        // let pdf = out_dir.dot(hit.n).abs() * f32::consts::FRAC_1_PI;
+        let out_dir = cosine_sample_hemisphere(u, v, &hit.n);
+        let f = self.albedo * f32::consts::FRAC_1_PI;
+        let pdf = out_dir.dot(hit.n).abs() * f32::consts::FRAC_1_PI;
 
         // Compute attenuation
         let attenuation = f / pdf;
@@ -52,6 +52,27 @@ impl Material for Diffuse {
             attenuation,
         })
     }
+}
+
+pub struct Mirror;
+
+impl Material for Mirror {
+    fn scatter(&self, r_in: &Ray, hit: &Hit) -> Option<ScatteringEvent> {
+        let reflect = reflect(r_in.d.normalize(), hit.n);
+
+        if reflect.dot(hit.n) > 0.0 {
+            Some(ScatteringEvent {
+                r_out: Ray::new(hit.p + 0.001 * hit.n, reflect),
+                attenuation: vec3(1.0, 1.0, 1.0),
+            })
+        } else {
+            None
+        }
+    }
+}
+
+fn reflect(v: Vec3, n: Vec3) -> Vec3 {
+    v - 2.0 * n.dot(v) * n
 }
 
 #[allow(dead_code)]
