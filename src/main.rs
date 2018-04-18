@@ -1,5 +1,6 @@
 extern crate cgmath as cg;
 extern crate rand;
+extern crate rayon;
 
 mod material;
 mod ray;
@@ -12,6 +13,7 @@ use std::sync::Arc;
 
 use cg::{prelude::*, vec3};
 use rand::Rng;
+use rayon::prelude::*;
 
 use material::*;
 use ray::Ray;
@@ -19,8 +21,8 @@ use shape::*;
 
 type Vec3 = cg::Vector3<f32>;
 
-const NX: usize = 400;
-const NY: usize = 200;
+const NX: usize = 800;
+const NY: usize = 600;
 
 pub fn colour(shape: &Shape, r: &mut Ray, depth: u32) -> Vec3 {
     if let Some(hit) = shape.intersect(r) {
@@ -48,11 +50,10 @@ fn main() {
     let mut buf = vec![Vec3::zero(); NX * NY];
     let ratio = NX as f32 / NY as f32;
     let ns = 100;
-    let mut rng = rand::thread_rng();
 
-    let ground: Arc<Material> = Arc::new(Diffuse::new(vec3(0.8, 0.8, 0.0)));
-    let diffuse: Arc<Material> = Arc::new(Diffuse::new(vec3(0.8, 0.3, 0.3)));
-    let mirror: Arc<Material> = Arc::new(Mirror);
+    let ground: Arc<Material + Send + Sync> = Arc::new(Diffuse::new(vec3(0.8, 0.8, 0.0)));
+    let diffuse: Arc<Material + Send + Sync> = Arc::new(Diffuse::new(vec3(0.8, 0.3, 0.3)));
+    let mirror: Arc<Material + Send + Sync> = Arc::new(Mirror);
     let world = Aggregation {
         shapes: vec![
             Box::new(Sphere::new(vec3(-1.0, 0.0, -1.0), 0.5, mirror.clone())),
@@ -61,7 +62,8 @@ fn main() {
         ],
     };
     let camera_centre = vec3(0.0, 0.0, 0.5);
-    for y in 0..NY {
+    buf.par_chunks_mut(NX).enumerate().for_each(|(y, row)| {
+        let mut rng = rand::thread_rng();
         for x in 0..NX {
             let mut col = Vec3::zero();
             for _ in 0..ns {
@@ -71,9 +73,9 @@ fn main() {
                 col += colour(&world, &mut ray, 0);
             }
 
-            buf[y * NX + x] = col / ns as f32;
+            row[x] = col / ns as f32;
         }
-    }
+    });
 
     write_img(&buf);
 }

@@ -20,11 +20,11 @@ pub trait Shape {
 pub struct Sphere {
     pub centre: Vec3,
     pub radius: f32,
-    pub material: Arc<Material>,
+    pub material: Arc<Material + Send + Sync>,
 }
 
 impl Sphere {
-    pub fn new(centre: Vec3, radius: f32, material: Arc<Material>) -> Sphere {
+    pub fn new(centre: Vec3, radius: f32, material: Arc<Material + Send + Sync>) -> Sphere {
         Sphere {
             centre,
             radius,
@@ -64,7 +64,7 @@ impl Shape for Sphere {
 }
 
 pub struct Aggregation {
-    pub shapes: Vec<Box<Shape>>,
+    pub shapes: Vec<Box<Shape + Send + Sync>>,
 }
 
 impl Shape for Aggregation {

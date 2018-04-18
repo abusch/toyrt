@@ -6,3 +6,4 @@ authors = ["Antoine Busch <abusch@atlassian.com>"]
 [dependencies]
 cgmath="0.16"
 rand = "*"
+rayon="1"
