@@ -1,16 +1,16 @@
 use std::f32;
 
-use Vec3;
+use {Point3, Vec3};
 
 #[derive(Debug, Clone)]
 pub struct Ray {
-    pub o: Vec3,
+    pub o: Point3,
     pub d: Vec3,
     pub t_max: f32,
 }
 
 impl Ray {
-    pub fn new(o: Vec3, d: Vec3) -> Ray {
+    pub fn new(o: Point3, d: Vec3) -> Ray {
         Ray {
             o,
             d,
@@ -18,7 +18,7 @@ impl Ray {
         }
     }
 
-    pub fn at(&self, t: f32) -> Vec3 {
+    pub fn at(&self, t: f32) -> Point3 {
         self.o + t * self.d
     }
 }

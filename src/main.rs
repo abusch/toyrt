@@ -22,6 +22,7 @@ use ray::Ray;
 use shape::*;
 
 type Vec3 = cg::Vector3<f32>;
+type Point3 = cg::Point3<f32>;
 
 fn main() {
     const NX: usize = 800;
@@ -42,7 +43,7 @@ fn main() {
     let ns = 10;
 
     let world = world();
-    let camera_centre = vec3(0.0, 0.0, 0.5);
+    let camera_centre = Point3::new(0.0, 0.0, 0.5);
     loop {
         buf.par_chunks_mut(NX).enumerate().for_each(|(y, row)| {
             let mut rng = rand::thread_rng();
@@ -84,9 +85,21 @@ pub fn world() -> Aggregation {
     let mirror: Arc<Material + Send + Sync> = Arc::new(Mirror);
     Aggregation {
         shapes: vec![
-            Box::new(Sphere::new(vec3(-1.0, 0.0, -1.0), 0.5, mirror.clone())),
-            Box::new(Sphere::new(vec3(0.0, 0.0, -1.0), 0.5, diffuse.clone())),
-            Box::new(Sphere::new(vec3(0.0, -100.5, -1.0), 100.0, ground.clone())),
+            Box::new(Sphere::new(
+                Point3::new(-1.0, 0.0, -1.0),
+                0.5,
+                mirror.clone(),
+            )),
+            Box::new(Sphere::new(
+                Point3::new(0.0, 0.0, -1.0),
+                0.5,
+                diffuse.clone(),
+            )),
+            Box::new(Sphere::new(
+                Point3::new(0.0, -100.5, -1.0),
+                100.0,
+                ground.clone(),
+            )),
         ],
     }
 }
