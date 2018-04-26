@@ -23,10 +23,10 @@ use shape::*;
 
 type Vec3 = cg::Vector3<f32>;
 
-const NX: usize = 800;
-const NY: usize = 600;
-
 fn main() {
+    const NX: usize = 800;
+    const NY: usize = 600;
+
     let mut window = match Window::new("toyrt", NX, NY, WindowOptions::default()) {
         Ok(win) => win,
         Err(err) => {
@@ -39,18 +39,9 @@ fn main() {
     let mut rendered_buf = vec![0u32; NX * NY];
     let ratio = NX as f32 / NY as f32;
     let mut total_samples = 0;
-    let ns = 5;
+    let ns = 10;
 
-    let ground: Arc<Material + Send + Sync> = Arc::new(Diffuse::new(vec3(0.8, 0.8, 0.0)));
-    let diffuse: Arc<Material + Send + Sync> = Arc::new(Diffuse::new(vec3(0.8, 0.3, 0.3)));
-    let mirror: Arc<Material + Send + Sync> = Arc::new(Mirror);
-    let world = Aggregation {
-        shapes: vec![
-            Box::new(Sphere::new(vec3(-1.0, 0.0, -1.0), 0.5, mirror.clone())),
-            Box::new(Sphere::new(vec3(0.0, 0.0, -1.0), 0.5, diffuse.clone())),
-            Box::new(Sphere::new(vec3(0.0, -100.5, -1.0), 100.0, ground.clone())),
-        ],
-    };
+    let world = world();
     let camera_centre = vec3(0.0, 0.0, 0.5);
     loop {
         buf.par_chunks_mut(NX).enumerate().for_each(|(y, row)| {
@@ -66,6 +57,7 @@ fn main() {
         });
         total_samples += ns;
         print!("\rRendered {} samples...", total_samples);
+        std::io::stdout().flush().unwrap();
         // Update display
         rendered_buf
             .par_chunks_mut(NX)
@@ -83,7 +75,20 @@ fn main() {
         }
     }
 
-    write_img(&buf);
+    write_img(&buf, (NX, NY));
+}
+
+pub fn world() -> Aggregation {
+    let ground: Arc<Material + Send + Sync> = Arc::new(Diffuse::new(vec3(0.8, 0.8, 0.0)));
+    let diffuse: Arc<Material + Send + Sync> = Arc::new(Diffuse::new(vec3(0.8, 0.3, 0.3)));
+    let mirror: Arc<Material + Send + Sync> = Arc::new(Mirror);
+    Aggregation {
+        shapes: vec![
+            Box::new(Sphere::new(vec3(-1.0, 0.0, -1.0), 0.5, mirror.clone())),
+            Box::new(Sphere::new(vec3(0.0, 0.0, -1.0), 0.5, diffuse.clone())),
+            Box::new(Sphere::new(vec3(0.0, -100.5, -1.0), 100.0, ground.clone())),
+        ],
+    }
 }
 
 pub fn colour(shape: &Shape, r: &mut Ray, depth: u32) -> Vec3 {
@@ -138,14 +143,14 @@ impl PixelSample {
     }
 }
 
-fn write_img(img: &[PixelSample]) {
+fn write_img(img: &[PixelSample], (width, height): (usize, usize)) {
     let file = File::create("out.ppm").expect("Could not create out.ppm");
     let mut out = BufWriter::new(file);
 
-    writeln!(out, "P3 {} {}\n255", NX, NY).unwrap();
-    for y in 0..NY {
-        for x in 0..NX {
-            let (r, g, b) = img[y * NX + x].render();
+    writeln!(out, "P3 {} {}\n255", width, height).unwrap();
+    for y in 0..height {
+        for x in 0..width {
+            let (r, g, b) = img[y * width + x].render();
             write!(out, "{} {} {} ", r, g, b).unwrap();
         }
         writeln!(out).unwrap();

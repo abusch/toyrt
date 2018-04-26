@@ -39,7 +39,7 @@ impl Material for Diffuse {
         // let f = self.albedo * f32::consts::FRAC_1_PI;
         // let pdf = 0.5 * f32::consts::FRAC_1_PI;
 
-        // With cosine-weight hemisphere distribution
+        // With cosine-weighted hemisphere distribution
         let out_dir = cosine_sample_hemisphere(u, v, &hit.n);
         let f = self.albedo * f32::consts::FRAC_1_PI;
         let pdf = out_dir.dot(hit.n).abs() * f32::consts::FRAC_1_PI;
