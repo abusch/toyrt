@@ -36,30 +36,39 @@ impl Sphere {
 impl Shape for Sphere {
     fn intersect(&self, ray: &mut Ray) -> Option<Hit> {
         let oc = ray.o - self.centre;
-        let a = ray.d.dot(ray.d);
-        let b = 2.0 * ray.d.dot(oc);
-        let c = oc.dot(oc) - self.radius * self.radius;
-        let discr_2 = b * b - 4.0 * a * c;
+        let a = ray.d.magnitude2();
+        let b = ray.d.dot(oc);
+        let c = oc.magnitude2() - self.radius * self.radius;
+        let discr_2 = b * b - a * c;
 
-        if discr_2 < 0.0 {
-            None
-        } else {
+        if discr_2 >= 0.0 {
             let discr = f32::sqrt(discr_2);
-            let t = (-b - discr) / (2.0 * a);
+            let mut t = (-b - discr) / a;
             if t >= 0.0 && t <= ray.t_max {
                 let p = ray.at(t);
                 let n = (p - self.centre).normalize();
                 ray.t_max = t;
 
-                Some(Hit {
+                return Some(Hit {
                     p,
                     n,
                     mat: self.material.clone(),
-                })
-            } else {
-                None
+                });
+            }
+            t = (-b + discr) / a;
+            if t >= 0.0 && t <= ray.t_max {
+                let p = ray.at(t);
+                let n = (p - self.centre).normalize();
+                ray.t_max = t;
+
+                return Some(Hit {
+                    p,
+                    n,
+                    mat: self.material.clone(),
+                });
             }
         }
+        None
     }
 }
 
