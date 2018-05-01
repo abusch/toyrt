@@ -5,12 +5,12 @@ use rand::{self, Rng};
 
 use ray::Ray;
 use shape::*;
-use Vec3;
+use Vec3f;
 
 #[derive(Debug)]
 pub struct ScatteringEvent {
     pub r_out: Ray,
-    pub attenuation: Vec3,
+    pub attenuation: Vec3f,
 }
 
 pub trait Material {
@@ -18,11 +18,11 @@ pub trait Material {
 }
 
 pub struct Diffuse {
-    albedo: Vec3,
+    albedo: Vec3f,
 }
 
 impl Diffuse {
-    pub fn new(albedo: Vec3) -> Diffuse {
+    pub fn new(albedo: Vec3f) -> Diffuse {
         Diffuse { albedo }
     }
 }
@@ -71,12 +71,12 @@ impl Material for Mirror {
     }
 }
 
-fn reflect(v: Vec3, n: Vec3) -> Vec3 {
+fn reflect(v: Vec3f, n: Vec3f) -> Vec3f {
     v - 2.0 * n.dot(v) * n
 }
 
 #[allow(dead_code)]
-fn uniform_sample_hemisphere(u: f32, v: f32, n: &Vec3) -> Vec3 {
+fn uniform_sample_hemisphere(u: f32, v: f32, n: &Vec3f) -> Vec3f {
     // Build an orthogonal coordinate system based around the normal
     let (tangent, bitangent) = coordinate_system(n);
 
@@ -95,7 +95,7 @@ fn uniform_sample_hemisphere(u: f32, v: f32, n: &Vec3) -> Vec3 {
 }
 
 #[allow(dead_code)]
-fn cosine_sample_hemisphere(u: f32, v: f32, n: &Vec3) -> Vec3 {
+fn cosine_sample_hemisphere(u: f32, v: f32, n: &Vec3f) -> Vec3f {
     // Build an orthogonal coordinate system based around the normal
     let (tangent, bitangent) = coordinate_system(n);
 
@@ -115,7 +115,7 @@ fn cosine_sample_hemisphere(u: f32, v: f32, n: &Vec3) -> Vec3 {
 }
 
 /// Create an orthogonal coordinate system from a single vector.
-fn coordinate_system(v1: &Vec3) -> (Vec3, Vec3) {
+fn coordinate_system(v1: &Vec3f) -> (Vec3f, Vec3f) {
     let v2 = if v1.x.abs() > v1.y.abs() {
         vec3(-v1.z, 0.0, v1.x) / (v1.x * v1.x + v1.z * v1.z).sqrt()
     } else {

@@ -4,12 +4,12 @@ use cg::prelude::*;
 
 use material::Material;
 use ray::Ray;
-use {Point3, Vec3};
+use {Point3f, Vec3f};
 
 #[derive(Clone)]
 pub struct Hit {
-    pub p: Point3,
-    pub n: Vec3,
+    pub p: Point3f,
+    pub n: Vec3f,
     pub mat: Arc<Material>,
 }
 
@@ -18,13 +18,13 @@ pub trait Shape {
 }
 
 pub struct Sphere {
-    pub centre: Point3,
+    pub centre: Point3f,
     pub radius: f32,
     pub material: Arc<Material + Send + Sync>,
 }
 
 impl Sphere {
-    pub fn new(centre: Point3, radius: f32, material: Arc<Material + Send + Sync>) -> Sphere {
+    pub fn new(centre: Point3f, radius: f32, material: Arc<Material + Send + Sync>) -> Sphere {
         Sphere {
             centre,
             radius,

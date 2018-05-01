@@ -21,8 +21,8 @@ use material::*;
 use ray::Ray;
 use shape::*;
 
-type Vec3 = cg::Vector3<f32>;
-type Point3 = cg::Point3<f32>;
+type Vec3f = cg::Vector3<f32>;
+type Point3f = cg::Point3<f32>;
 
 fn main() {
     const NX: usize = 800;
@@ -43,7 +43,7 @@ fn main() {
     let ns = 10;
 
     let world = world();
-    let camera_centre = Point3::new(0.0, 0.0, 0.5);
+    let camera_centre = Point3f::new(0.0, 0.0, 0.5);
     loop {
         buf.par_chunks_mut(NX).enumerate().for_each(|(y, row)| {
             let mut rng = rand::thread_rng();
@@ -59,6 +59,7 @@ fn main() {
         total_samples += ns;
         print!("\rRendered {} samples...", total_samples);
         std::io::stdout().flush().unwrap();
+
         // Update display
         rendered_buf
             .par_chunks_mut(NX)
@@ -86,17 +87,17 @@ pub fn world() -> Aggregation {
     Aggregation {
         shapes: vec![
             Box::new(Sphere::new(
-                Point3::new(-1.0, 0.0, -1.0),
+                Point3f::new(-1.0, 0.0, -1.0),
                 0.5,
                 mirror.clone(),
             )),
             Box::new(Sphere::new(
-                Point3::new(0.0, 0.0, -1.0),
+                Point3f::new(0.0, 0.0, -1.0),
                 0.5,
                 diffuse.clone(),
             )),
             Box::new(Sphere::new(
-                Point3::new(0.0, -100.5, -1.0),
+                Point3f::new(0.0, -100.5, -1.0),
                 100.0,
                 ground.clone(),
             )),
@@ -104,7 +105,7 @@ pub fn world() -> Aggregation {
     }
 }
 
-pub fn colour(shape: &Shape, r: &mut Ray, depth: u32) -> Vec3 {
+pub fn colour(shape: &Shape, r: &mut Ray, depth: u32) -> Vec3f {
     if let Some(hit) = shape.intersect(r) {
         if let Some(mut scattering_event) = hit.mat.scatter(r, &hit) {
             if depth < 50 {
@@ -113,10 +114,10 @@ pub fn colour(shape: &Shape, r: &mut Ray, depth: u32) -> Vec3 {
                 let scattered = colour(shape, &mut scattering_event.r_out, depth + 1);
                 scattering_event.attenuation.mul_element_wise(scattered) * cos_theta
             } else {
-                Vec3::zero()
+                Vec3f::zero()
             }
         } else {
-            Vec3::zero()
+            Vec3f::zero()
         }
     } else {
         let unit_vec = r.d.normalize();
@@ -128,19 +129,19 @@ pub fn colour(shape: &Shape, r: &mut Ray, depth: u32) -> Vec3 {
 
 #[derive(Debug, Clone)]
 pub struct PixelSample {
-    sum: Vec3,
+    sum: Vec3f,
     n_sample: u32,
 }
 
 impl PixelSample {
     pub fn new() -> PixelSample {
         PixelSample {
-            sum: Vec3::zero(),
+            sum: Vec3f::zero(),
             n_sample: 0,
         }
     }
 
-    pub fn add(&mut self, sample: &Vec3) {
+    pub fn add(&mut self, sample: &Vec3f) {
         self.sum += *sample;
         self.n_sample += 1;
     }
