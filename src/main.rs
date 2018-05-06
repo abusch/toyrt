@@ -3,6 +3,7 @@ extern crate minifb;
 extern crate rand;
 extern crate rayon;
 
+mod camera;
 mod material;
 mod ray;
 mod shape;
@@ -17,6 +18,7 @@ use minifb::{Window, WindowOptions};
 use rand::Rng;
 use rayon::prelude::*;
 
+use camera::Camera;
 use material::*;
 use ray::Ray;
 use shape::*;
@@ -38,20 +40,29 @@ fn main() {
 
     let mut buf = vec![PixelSample::new(); NX * NY];
     let mut rendered_buf = vec![0u32; NX * NY];
-    let ratio = NX as f32 / NY as f32;
     let mut total_samples = 0;
     let ns = 10;
 
     let world = world();
-    let camera_centre = Point3f::new(0.0, 0.0, 0.5);
+    let camera = Camera::new(
+        Point3f::new(0.0, 0.0, 0.5),
+        Point3f::new(0.0, 0.0, 0.0),
+        Vec3f::unit_y(),
+        90.0,
+        NX as f32 / NY as f32,
+        0.0,
+        0.0,
+        1.0,
+        0.5,
+    );
     loop {
         buf.par_chunks_mut(NX).enumerate().for_each(|(y, row)| {
             let mut rng = rand::thread_rng();
             for x in 0..NX {
                 for _ in 0..ns {
-                    let u = (((x as f32 + rng.next_f32()) / NX as f32) * 2.0 - 1.0) * ratio;
-                    let v = (((NY - y) as f32 + rng.next_f32()) / NY as f32) * 2.0 - 1.0;
-                    let mut ray = Ray::new(camera_centre, vec3(u, v, -1.0));
+                    let u = (x as f32 + rng.next_f32()) / NX as f32;
+                    let v = ((NY - y) as f32 + rng.next_f32()) / NY as f32;
+                    let mut ray = camera.get_ray(u, v);
                     row[x].add(&colour(&world, &mut ray, 0));
                 }
             }
