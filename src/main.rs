@@ -1,3 +1,4 @@
+#![allow(too_many_arguments, many_single_char_names)]
 extern crate cgmath as cg;
 extern crate minifb;
 extern crate rand;
@@ -14,7 +15,7 @@ use std::io::{BufWriter, Write};
 use std::sync::Arc;
 
 use cg::{prelude::*, vec3};
-use minifb::{Window, WindowOptions};
+use minifb::{Key, Window, WindowOptions};
 use rand::Rng;
 use rayon::prelude::*;
 
@@ -27,10 +28,10 @@ type Vec3f = cg::Vector3<f32>;
 type Point3f = cg::Point3<f32>;
 
 fn main() {
-    const NX: usize = 800;
-    const NY: usize = 600;
+    let width: usize = 800;
+    let height: usize = 600;
 
-    let mut window = match Window::new("toyrt", NX, NY, WindowOptions::default()) {
+    let mut window = match Window::new("toyrt", width, height, WindowOptions::default()) {
         Ok(win) => win,
         Err(err) => {
             println!("Unable to create window {}", err);
@@ -38,10 +39,9 @@ fn main() {
         }
     };
 
-    let mut buf = vec![PixelSample::new(); NX * NY];
-    let mut rendered_buf = vec![0u32; NX * NY];
-    let mut total_samples = 0;
-    let ns = 10;
+    let mut buf = vec![PixelSample::default(); width * height];
+    let mut rendered_buf = vec![0u32; width * height];
+    let ns = 100;
 
     let world = world();
     let camera = Camera::new(
@@ -49,46 +49,41 @@ fn main() {
         Point3f::new(0.0, 0.0, 0.0),
         Vec3f::unit_y(),
         90.0,
-        NX as f32 / NY as f32,
+        width as f32 / height as f32,
         0.0,
         0.0,
         1.0,
         0.5,
     );
-    loop {
-        buf.par_chunks_mut(NX).enumerate().for_each(|(y, row)| {
-            let mut rng = rand::thread_rng();
-            for x in 0..NX {
-                for _ in 0..ns {
-                    let u = (x as f32 + rng.next_f32()) / NX as f32;
-                    let v = ((NY - y) as f32 + rng.next_f32()) / NY as f32;
-                    let mut ray = camera.get_ray(u, v);
-                    row[x].add(&colour(&world, &mut ray, 0));
-                }
+    buf.par_chunks_mut(width).enumerate().for_each(|(y, row)| {
+        let mut rng = rand::thread_rng();
+        for (x, pixel) in row.iter_mut().enumerate() {
+            for _ in 0..ns {
+                let u = (x as f32 + rng.next_f32()) / width as f32;
+                let v = ((height - y) as f32 + rng.next_f32()) / height as f32;
+                let mut ray = camera.get_ray(u, v);
+                pixel.add(&colour(&world, &mut ray, 0));
+            }
+        }
+    });
+    println!("\rRendered {} samples...", ns);
+
+    // Update display
+    rendered_buf
+        .par_chunks_mut(width)
+        .enumerate()
+        .for_each(|(y, row)| {
+            for x in 0..width {
+                let (r, g, b) = buf[x + width * y].render();
+                row[x] = (u32::from(r) << 16) | (u32::from(g) << 8) | (u32::from(b));
             }
         });
-        total_samples += ns;
-        print!("\rRendered {} samples...", total_samples);
-        std::io::stdout().flush().unwrap();
-
-        // Update display
-        rendered_buf
-            .par_chunks_mut(NX)
-            .enumerate()
-            .for_each(|(y, row)| {
-                for x in 0..NX {
-                    let (r, g, b) = buf[x + NX * y].render();
-                    row[x] = ((r as u32) << 16) | ((g as u32) << 8) | (b as u32);
-                }
-            });
-        if window.is_open() {
-            window.update_with_buffer(&rendered_buf).unwrap();
-        } else {
-            break;
-        }
+    window.update_with_buffer(&rendered_buf).unwrap();
+    while window.is_open() && !window.is_key_down(Key::Escape) {
+        window.update();
     }
 
-    write_img(&buf, (NX, NY));
+    write_img(&buf, (width, height));
 }
 
 pub fn world() -> Aggregation {
@@ -145,13 +140,6 @@ pub struct PixelSample {
 }
 
 impl PixelSample {
-    pub fn new() -> PixelSample {
-        PixelSample {
-            sum: Vec3f::zero(),
-            n_sample: 0,
-        }
-    }
-
     pub fn add(&mut self, sample: &Vec3f) {
         self.sum += *sample;
         self.n_sample += 1;
@@ -165,6 +153,15 @@ impl PixelSample {
             (f32::powf(g, 1.0 / 2.2) * 255.99) as u8,
             (f32::powf(b, 1.0 / 2.2) * 255.99) as u8,
         )
+    }
+}
+
+impl Default for PixelSample {
+    fn default() -> Self {
+        PixelSample {
+            sum: Vec3f::zero(),
+            n_sample: 0,
+        }
     }
 }
 

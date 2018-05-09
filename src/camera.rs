@@ -13,8 +13,8 @@ pub struct Camera {
     vertical: Vec3f,
     u: Vec3f,
     v: Vec3f,
-    time0: f32,
-    time1: f32,
+    _time0: f32,
+    _time1: f32,
     lens_radius: f32,
 }
 
@@ -51,8 +51,8 @@ impl Camera {
             vertical,
             u,
             v,
-            time0: t0,
-            time1: t1,
+            _time0: t0,
+            _time1: t1,
             lens_radius,
         }
     }

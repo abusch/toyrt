@@ -81,10 +81,10 @@ fn uniform_sample_hemisphere(u: f32, v: f32, n: &Vec3f) -> Vec3f {
     let (tangent, bitangent) = coordinate_system(n);
 
     let z = u;
-    let r = (1.0 - z * z).max(0.0).sqrt();
+    let radius = (1.0 - z * z).max(0.0).sqrt();
     let phi = 2.0 * f32::consts::PI * v;
-    let x = r * phi.cos();
-    let y = r * phi.sin();
+    let x = radius * phi.cos();
+    let y = radius * phi.sin();
 
     // Transform generated vector back into world space
     vec3(
@@ -100,10 +100,10 @@ fn cosine_sample_hemisphere(u: f32, v: f32, n: &Vec3f) -> Vec3f {
     let (tangent, bitangent) = coordinate_system(n);
 
     // Generate a random direction in local coordinate space
-    let r = f32::sqrt(u);
+    let radius = f32::sqrt(u);
     let theta = 2.0 * f32::consts::PI * v;
-    let x = r * f32::cos(theta);
-    let y = r * f32::sin(theta);
+    let x = radius * f32::cos(theta);
+    let y = radius * f32::sin(theta);
     let z = f32::sqrt(f32::max(0.0, 1.0 - u));
 
     // Transform generated vector back into world space
