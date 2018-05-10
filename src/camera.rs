@@ -3,8 +3,8 @@ use std::f32;
 use cg::prelude::*;
 use rand::{self, Rng};
 
-use {Point3f, Vec3f};
 use ray::Ray;
+use {Point3f, Vec3f};
 
 pub struct Camera {
     origin: Point3f,

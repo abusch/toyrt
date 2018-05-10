@@ -1,4 +1,4 @@
-#![allow(too_many_arguments, many_single_char_names)]
+#![cfg_attr(feature = "cargo-clippy", allow(too_many_arguments, many_single_char_names))]
 extern crate cgmath as cg;
 extern crate minifb;
 extern crate rand;
