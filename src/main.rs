@@ -86,7 +86,7 @@ fn main() {
     write_img(&buf, (width, height));
 }
 
-pub fn world() -> Aggregation {
+pub fn world() -> impl Shape {
     let ground: Arc<Material + Send + Sync> = Arc::new(Diffuse::new(vec3(0.8, 0.8, 0.0)));
     let diffuse: Arc<Material + Send + Sync> = Arc::new(Diffuse::new(vec3(0.8, 0.3, 0.3)));
     let mirror: Arc<Material + Send + Sync> = Arc::new(Mirror);
