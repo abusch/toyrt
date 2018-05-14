@@ -9,6 +9,7 @@ mod camera;
 mod material;
 mod ray;
 mod shape;
+mod transform;
 
 use std::f32;
 use std::fs::File;
@@ -96,11 +97,11 @@ pub fn world() -> impl Shape {
         shapes: vec![
             Box::new(TransformedShape::new(
                 Box::new(Sphere::new(0.5, mirror.clone())),
-                Matrix4f::from_translation(vec3(-1.0, 0.0, -1.0)),
+                Matrix4f::from_translation(vec3(-1.0, 0.0, -1.0)).into(),
             )),
             Box::new(TransformedShape::new(
                 Box::new(Sphere::new(0.5, diffuse.clone())),
-                Matrix4f::from_translation(vec3(0.0, 0.0, -1.0)),
+                Matrix4f::from_translation(vec3(0.0, 0.0, -1.0)).into(),
             )),
             // Box::new(Sphere::new(
             //     Point3f::new(0.0, -100.5, -1.0),
@@ -108,8 +109,8 @@ pub fn world() -> impl Shape {
             //     ground.clone(),
             // )),
             Box::new(TransformedShape::new(
-                Box::new(Rect::new(-0.5, ground.clone())),
-                Matrix4f::from_translation(vec3(0.0, 0.0, -1.0)),
+                Box::new(Plane::new(-0.5, ground.clone())),
+                Matrix4f::from_translation(vec3(0.0, 0.0, -1.0)).into(),
             )),
         ],
     }

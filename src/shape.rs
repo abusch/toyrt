@@ -1,10 +1,10 @@
 use std::sync::Arc;
 
 use cg::prelude::*;
-
 use material::Material;
 use ray::Ray;
-use {Matrix4f, Point3f, Vec3f};
+use transform::Transform;
+use {Point3f, Vec3f};
 
 #[derive(Clone)]
 pub struct Hit {
@@ -14,23 +14,12 @@ pub struct Hit {
 }
 
 impl Hit {
-    pub fn transform(&self, t: Matrix4f) -> Self {
+    pub fn transform(&self, t: Transform) -> Self {
         Hit {
             p: t.transform_point(self.p),
-            n: Self::transform_normal(t, self.n),
+            n: t.transform_normal(self.n),
             mat: self.mat.clone(),
         }
-    }
-
-    fn transform_normal(t: Matrix4f, n: Vec3f) -> Vec3f {
-        let m = t.invert().unwrap();
-        let (x, y, z) = (n.x, n.y, n.z);
-
-        Vec3f::new(
-            m[0][0] * x + m[1][0] * y + m[2][0] * z,
-            m[0][1] * x + m[1][1] * y + m[2][1] * z,
-            m[0][2] * x + m[1][2] * y + m[2][2] * z,
-        )
     }
 }
 
@@ -89,19 +78,19 @@ impl Shape for Sphere {
 }
 
 /// Rectangle shape in the XZ plane (normal pointing in the Y direction), centred around the
-/// origin, of size 1x1.
-pub struct Rect {
+/// origin, of size 1x1, at a height of h.
+pub struct Plane {
     k: f32,
     material: Arc<Material + Send + Sync>,
 }
 
-impl Rect {
+impl Plane {
     pub fn new(k: f32, mat: Arc<Material + Send + Sync>) -> Self {
-        Rect { k, material: mat }
+        Plane { k, material: mat }
     }
 }
 
-impl Shape for Rect {
+impl Shape for Plane {
     fn intersect(&self, r: &mut Ray) -> Option<Hit> {
         let t = (self.k - r.o.y) / r.d.y;
         if t < 0.0 || t > r.t_max {
@@ -135,23 +124,21 @@ impl Shape for Rect {
 
 pub struct TransformedShape {
     pub shape: Box<Shape + Send + Sync>,
-    pub transform: Matrix4f,
-    pub inv_transform: Matrix4f,
+    pub transform: Transform,
 }
 
 impl TransformedShape {
-    pub fn new(s: Box<Shape + Send + Sync>, t: Matrix4f) -> TransformedShape {
+    pub fn new(s: Box<Shape + Send + Sync>, t: Transform) -> TransformedShape {
         TransformedShape {
             shape: s,
             transform: t,
-            inv_transform: t.invert().unwrap(),
         }
     }
 }
 
 impl Shape for TransformedShape {
     fn intersect(&self, ray: &mut Ray) -> Option<Hit> {
-        let mut local_ray = ray.transform(self.inv_transform);
+        let mut local_ray = ray.transform(self.transform.m_inv);
         let hit = self.shape.intersect(&mut local_ray).map(|h| {
             ray.t_max = local_ray.t_max;
             h.transform(self.transform)
