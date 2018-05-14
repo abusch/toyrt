@@ -91,28 +91,25 @@ pub fn world() -> impl Shape {
     let ground: Arc<Material + Send + Sync> = Arc::new(Diffuse::new(vec3(0.8, 0.8, 0.0)));
     let diffuse: Arc<Material + Send + Sync> = Arc::new(Diffuse::new(vec3(0.8, 0.3, 0.3)));
     let mirror: Arc<Material + Send + Sync> = Arc::new(Mirror);
-    let transform = Matrix4f::from_translation(vec3(0.0, 0.5, 0.0));
     Aggregation {
         shapes: vec![
-            Box::new(Sphere::new(
-                Point3f::new(-1.0, 0.0, -1.0),
-                0.5,
-                mirror.clone(),
+            Box::new(TransformedShape::new(
+                Box::new(Sphere::new(0.5, mirror.clone())),
+                Matrix4f::from_translation(vec3(-1.0, 0.0, -1.0)),
             )),
             Box::new(TransformedShape::new(
-                Box::new(Sphere::new(
-                    Point3f::new(0.0, 0.0, -1.0),
-                    0.5,
-                    diffuse.clone(),
-                )),
-                transform,
+                Box::new(Sphere::new(0.5, diffuse.clone())),
+                Matrix4f::from_translation(vec3(0.0, 0.0, -1.0)),
             )),
             // Box::new(Sphere::new(
             //     Point3f::new(0.0, -100.5, -1.0),
             //     100.0,
             //     ground.clone(),
             // )),
-            Box::new(Rect::new(-5.0, 5.0, -5.0, 5.0, -0.5, ground.clone())),
+            Box::new(TransformedShape::new(
+                Box::new(Rect::new(-0.5, ground.clone())),
+                Matrix4f::from_translation(vec3(0.0, 0.0, -1.0)),
+            )),
         ],
     }
 }

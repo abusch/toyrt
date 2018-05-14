@@ -39,24 +39,19 @@ pub trait Shape {
 }
 
 pub struct Sphere {
-    pub centre: Point3f,
     pub radius: f32,
     pub material: Arc<Material + Send + Sync>,
 }
 
 impl Sphere {
-    pub fn new(centre: Point3f, radius: f32, material: Arc<Material + Send + Sync>) -> Sphere {
-        Sphere {
-            centre,
-            radius,
-            material,
-        }
+    pub fn new(radius: f32, material: Arc<Material + Send + Sync>) -> Sphere {
+        Sphere { radius, material }
     }
 }
 
 impl Shape for Sphere {
     fn intersect(&self, ray: &mut Ray) -> Option<Hit> {
-        let oc = ray.o - self.centre;
+        let oc = ray.o.to_vec();
         let a = ray.d.magnitude2();
         let b = ray.d.dot(oc);
         let c = oc.magnitude2() - self.radius * self.radius;
@@ -67,7 +62,7 @@ impl Shape for Sphere {
             let mut t = (-b - discr) / a;
             if t >= 0.0 && t <= ray.t_max {
                 let p = ray.at(t);
-                let n = (p - self.centre).normalize();
+                let n = p.to_vec().normalize();
                 ray.t_max = t;
 
                 return Some(Hit {
@@ -79,7 +74,7 @@ impl Shape for Sphere {
             t = (-b + discr) / a;
             if t >= 0.0 && t <= ray.t_max {
                 let p = ray.at(t);
-                let n = (p - self.centre).normalize();
+                let n = p.to_vec().normalize();
                 ray.t_max = t;
 
                 return Some(Hit {
@@ -93,33 +88,16 @@ impl Shape for Sphere {
     }
 }
 
-/// Rectangle shape in the XZ plane (normal pointing in the Y direction)
+/// Rectangle shape in the XZ plane (normal pointing in the Y direction), centred around the
+/// origin, of size 1x1.
 pub struct Rect {
-    x0: f32,
-    x1: f32,
-    z0: f32,
-    z1: f32,
     k: f32,
     material: Arc<Material + Send + Sync>,
 }
 
 impl Rect {
-    pub fn new(
-        x0: f32,
-        x1: f32,
-        z0: f32,
-        z1: f32,
-        k: f32,
-        mat: Arc<Material + Send + Sync>,
-    ) -> Self {
-        Rect {
-            x0,
-            x1,
-            z0,
-            z1,
-            k,
-            material: mat,
-        }
+    pub fn new(k: f32, mat: Arc<Material + Send + Sync>) -> Self {
+        Rect { k, material: mat }
     }
 }
 
@@ -132,7 +110,7 @@ impl Shape for Rect {
 
         let x = r.o.x + t * r.d.x;
         let z = r.o.z + t * r.d.z;
-        if x < self.x0 || x > self.x1 || z < self.z0 || z > self.z1 {
+        if x < -0.5 || x > 0.5 || z < -0.5 || z > 0.5 {
             return None;
         }
         // TODO uv
