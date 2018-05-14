@@ -102,11 +102,12 @@ pub fn world() -> impl Shape {
                 0.5,
                 diffuse.clone(),
             )),
-            Box::new(Sphere::new(
-                Point3f::new(0.0, -100.5, -1.0),
-                100.0,
-                ground.clone(),
-            )),
+            // Box::new(Sphere::new(
+            //     Point3f::new(0.0, -100.5, -1.0),
+            //     100.0,
+            //     ground.clone(),
+            // )),
+            Box::new(Rect::new(-5.0, 5.0, -5.0, 5.0, -0.5, ground.clone())),
         ],
     }
 }

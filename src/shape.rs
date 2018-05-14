@@ -72,6 +72,68 @@ impl Shape for Sphere {
     }
 }
 
+/// Rectangle shape in the XZ plane (normal pointing in the Y direction)
+pub struct Rect {
+    x0: f32,
+    x1: f32,
+    z0: f32,
+    z1: f32,
+    k: f32,
+    material: Arc<Material + Send + Sync>,
+}
+
+impl Rect {
+    pub fn new(
+        x0: f32,
+        x1: f32,
+        z0: f32,
+        z1: f32,
+        k: f32,
+        mat: Arc<Material + Send + Sync>,
+    ) -> Self {
+        Rect {
+            x0,
+            x1,
+            z0,
+            z1,
+            k,
+            material: mat,
+        }
+    }
+}
+
+impl Shape for Rect {
+    fn intersect(&self, r: &mut Ray) -> Option<Hit> {
+        let t = (self.k - r.o.y) / r.d.y;
+        if t < 0.0 || t > r.t_max {
+            return None;
+        }
+
+        let x = r.o.x + t * r.d.x;
+        let z = r.o.z + t * r.d.z;
+        if x < self.x0 || x > self.x1 || z < self.z0 || z > self.z1 {
+            return None;
+        }
+        // TODO uv
+        // rec.u = (x - self.x0) / (self.x1 - self.x0);
+        // rec.v = (z - self.z0) / (self.z1 - self.z0);
+        r.t_max = t;
+        Some(Hit {
+            n: Vec3f::unit_y(),
+            p: r.at(t),
+            mat: self.material.clone(),
+        })
+    }
+
+    // fn bounding_box(&self, _t0: f32, _t1: f32, aabb: &mut Aabb) -> bool {
+    //     *aabb = Aabb::new(
+    //         &Vec3::new(self.x0, self.k - 0.0001, self.z0),
+    //         &Vec3::new(self.x1, self.k + 0.0001, self.z1),
+    //     );
+    //     true
+    // }
+}
+
 pub struct Aggregation {
     pub shapes: Vec<Box<Shape + Send + Sync>>,
 }
