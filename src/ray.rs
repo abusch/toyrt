@@ -1,6 +1,8 @@
 use std::f32;
 
-use {Point3f, Vec3f};
+use cg::prelude::*;
+
+use {Matrix4f, Point3f, Vec3f};
 
 #[derive(Debug, Clone)]
 pub struct Ray {
@@ -10,7 +12,7 @@ pub struct Ray {
 }
 
 impl Ray {
-    pub fn new(o: Point3f, d: Vec3f) -> Ray {
+    pub fn new(o: Point3f, d: Vec3f) -> Self {
         Ray {
             o,
             d,
@@ -20,5 +22,13 @@ impl Ray {
 
     pub fn at(&self, t: f32) -> Point3f {
         self.o + t * self.d
+    }
+
+    pub fn transform(&self, t: Matrix4f) -> Self {
+        Ray {
+            o: t.transform_point(self.o),
+            d: t.transform_vector(self.d),
+            t_max: self.t_max,
+        }
     }
 }

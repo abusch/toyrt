@@ -4,13 +4,34 @@ use cg::prelude::*;
 
 use material::Material;
 use ray::Ray;
-use {Point3f, Vec3f};
+use {Matrix4f, Point3f, Vec3f};
 
 #[derive(Clone)]
 pub struct Hit {
     pub p: Point3f,
     pub n: Vec3f,
     pub mat: Arc<Material>,
+}
+
+impl Hit {
+    pub fn transform(&self, t: Matrix4f) -> Self {
+        Hit {
+            p: t.transform_point(self.p),
+            n: Self::transform_normal(t, self.n),
+            mat: self.mat.clone(),
+        }
+    }
+
+    fn transform_normal(t: Matrix4f, n: Vec3f) -> Vec3f {
+        let m = t.invert().unwrap();
+        let (x, y, z) = (n.x, n.y, n.z);
+
+        Vec3f::new(
+            m[0][0] * x + m[1][0] * y + m[2][0] * z,
+            m[0][1] * x + m[1][1] * y + m[2][1] * z,
+            m[0][2] * x + m[1][2] * y + m[2][2] * z,
+        )
+    }
 }
 
 pub trait Shape {
@@ -132,6 +153,33 @@ impl Shape for Rect {
     //     );
     //     true
     // }
+}
+
+pub struct TransformedShape {
+    pub shape: Box<Shape + Send + Sync>,
+    pub transform: Matrix4f,
+    pub inv_transform: Matrix4f,
+}
+
+impl TransformedShape {
+    pub fn new(s: Box<Shape + Send + Sync>, t: Matrix4f) -> TransformedShape {
+        TransformedShape {
+            shape: s,
+            transform: t,
+            inv_transform: t.invert().unwrap(),
+        }
+    }
+}
+
+impl Shape for TransformedShape {
+    fn intersect(&self, ray: &mut Ray) -> Option<Hit> {
+        let mut local_ray = ray.transform(self.inv_transform);
+        let hit = self.shape.intersect(&mut local_ray).map(|h| {
+            ray.t_max = local_ray.t_max;
+            h.transform(self.transform)
+        });
+        hit
+    }
 }
 
 pub struct Aggregation {

@@ -26,6 +26,7 @@ use shape::*;
 
 type Vec3f = cg::Vector3<f32>;
 type Point3f = cg::Point3<f32>;
+type Matrix4f = cg::Matrix4<f32>;
 
 fn main() {
     let width: usize = 800;
@@ -90,6 +91,7 @@ pub fn world() -> impl Shape {
     let ground: Arc<Material + Send + Sync> = Arc::new(Diffuse::new(vec3(0.8, 0.8, 0.0)));
     let diffuse: Arc<Material + Send + Sync> = Arc::new(Diffuse::new(vec3(0.8, 0.3, 0.3)));
     let mirror: Arc<Material + Send + Sync> = Arc::new(Mirror);
+    let transform = Matrix4f::from_translation(vec3(0.0, 0.5, 0.0));
     Aggregation {
         shapes: vec![
             Box::new(Sphere::new(
@@ -97,10 +99,13 @@ pub fn world() -> impl Shape {
                 0.5,
                 mirror.clone(),
             )),
-            Box::new(Sphere::new(
-                Point3f::new(0.0, 0.0, -1.0),
-                0.5,
-                diffuse.clone(),
+            Box::new(TransformedShape::new(
+                Box::new(Sphere::new(
+                    Point3f::new(0.0, 0.0, -1.0),
+                    0.5,
+                    diffuse.clone(),
+                )),
+                transform,
             )),
             // Box::new(Sphere::new(
             //     Point3f::new(0.0, -100.5, -1.0),
