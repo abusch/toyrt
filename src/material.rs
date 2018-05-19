@@ -3,9 +3,9 @@ use std::f32;
 use cg::{prelude::*, vec3};
 use rand::{self, Rng};
 
+use Vec3f;
 use ray::Ray;
 use shape::*;
-use Vec3f;
 
 #[derive(Debug)]
 pub struct ScatteringEvent {
@@ -115,14 +115,17 @@ fn cosine_sample_hemisphere(u: f32, v: f32, n: &Vec3f) -> Vec3f {
 }
 
 /// Create an orthogonal coordinate system from a single vector.
-fn coordinate_system(v1: &Vec3f) -> (Vec3f, Vec3f) {
-    let v2 = if v1.x.abs() > v1.y.abs() {
-        vec3(-v1.z, 0.0, v1.x) / (v1.x * v1.x + v1.z * v1.z).sqrt()
-    } else {
-        vec3(0.0, v1.z, -v1.y) / (v1.y * v1.y + v1.z * v1.z).sqrt()
-    };
+fn coordinate_system(normal: &Vec3f) -> (Vec3f, Vec3f) {
+    // [Duff et al. 17] Building An Orthonormal Basis, Revisited. JCGT. 2017.
+    let sign = unsafe {::std::intrinsics::copysignf32(1.0, normal.z)};
+    let a = -1.0 / (sign + normal.z);
+    let b = normal.x * normal.y * a;
+    let tangent = Vec3f::new(
+        1.0 + sign * normal.x * normal.x * a,
+        sign * b,
+        -sign * normal.x,
+    );
+    let bitangent = Vec3f::new(b, sign + normal.y * normal.y * a, -normal.y);
 
-    let v3 = v1.cross(v2);
-
-    (v2, v3)
+    (tangent, bitangent)
 }
