@@ -3,9 +3,9 @@ use std::f32;
 use cg::{prelude::*, vec3};
 use rand::{self, Rng};
 
-use Vec3f;
 use ray::Ray;
 use shape::*;
+use Vec3f;
 
 #[derive(Debug)]
 pub struct ScatteringEvent {
@@ -31,8 +31,8 @@ impl Material for Diffuse {
     fn scatter(&self, _r_in: &Ray, hit: &Hit) -> Option<ScatteringEvent> {
         // Random direction for output ray
         let mut rng = rand::thread_rng();
-        let u = rng.next_f32();
-        let v = rng.next_f32();
+        let u = rng.gen::<f32>();
+        let v = rng.gen::<f32>();
 
         // With uniform hemisphere distribution
         // let out_dir = uniform_sample_hemisphere(u, v, &hit.n);
@@ -117,7 +117,7 @@ fn cosine_sample_hemisphere(u: f32, v: f32, n: &Vec3f) -> Vec3f {
 /// Create an orthogonal coordinate system from a single vector.
 fn coordinate_system(normal: &Vec3f) -> (Vec3f, Vec3f) {
     // [Duff et al. 17] Building An Orthonormal Basis, Revisited. JCGT. 2017.
-    let sign = unsafe {::std::intrinsics::copysignf32(1.0, normal.z)};
+    let sign = unsafe { ::std::intrinsics::copysignf32(1.0, normal.z) };
     let a = -1.0 / (sign + normal.z);
     let b = normal.x * normal.y * a;
     let tangent = Vec3f::new(

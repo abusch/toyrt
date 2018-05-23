@@ -61,8 +61,8 @@ fn main() {
         let mut rng = rand::thread_rng();
         for (x, pixel) in row.iter_mut().enumerate() {
             for _ in 0..ns {
-                let u = (x as f32 + rng.next_f32()) / width as f32;
-                let v = ((height - y) as f32 + rng.next_f32()) / height as f32;
+                let u = (x as f32 + rng.gen::<f32>()) / width as f32;
+                let v = ((height - y) as f32 + rng.gen::<f32>()) / height as f32;
                 let mut ray = camera.get_ray(u, v);
                 pixel.add(&colour(&world, &mut ray, 0));
             }

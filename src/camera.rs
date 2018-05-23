@@ -40,8 +40,10 @@ impl Camera {
         let v = w.cross(u).normalize();
 
         // let lower_left_corner = Vec3::new(-half_width, -half_height, -1.);
-        let lower_left_corner = origin - half_width * focus_distance * u
-            - half_height * focus_distance * v - focus_distance * w;
+        let lower_left_corner = origin
+            - half_width * focus_distance * u
+            - half_height * focus_distance * v
+            - focus_distance * w;
         let horizontal = 2.0 * half_width * focus_distance * u;
         let vertical = 2.0 * half_height * focus_distance * v;
         Camera {
@@ -70,7 +72,8 @@ impl Camera {
 fn random_in_unit_disk() -> Vec3f {
     let mut rng = rand::thread_rng();
     loop {
-        let p = 2.0 * Vec3f::new(rng.next_f32(), rng.next_f32(), 0.0) - Vec3f::new(1.0, 1.0, 0.0);
+        let p =
+            2.0 * Vec3f::new(rng.gen::<f32>(), rng.gen::<f32>(), 0.0) - Vec3f::new(1.0, 1.0, 0.0);
         if p.dot(p) < 1.0 {
             return p;
         }
