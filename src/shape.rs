@@ -139,11 +139,10 @@ impl TransformedShape {
 impl Shape for TransformedShape {
     fn intersect(&self, ray: &mut Ray) -> Option<Hit> {
         let mut local_ray = ray.transform(self.transform.m_inv);
-        let hit = self.shape.intersect(&mut local_ray).map(|h| {
+        self.shape.intersect(&mut local_ray).map(|h| {
             ray.t_max = local_ray.t_max;
             h.transform(self.transform)
-        });
-        hit
+        })
     }
 }
 
