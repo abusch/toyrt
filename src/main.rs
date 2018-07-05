@@ -124,6 +124,7 @@ pub fn colour(shape: &Shape, r: &mut Ray, depth: u32) -> Vec3f {
                 let cos_theta = scattering_event.r_out.d.dot(hit.n).abs();
                 let scattered = colour(shape, &mut scattering_event.r_out, depth + 1);
                 scattering_event.attenuation.mul_element_wise(scattered) * cos_theta
+                    / scattering_event.pdf
             } else {
                 Vec3f::zero()
             }

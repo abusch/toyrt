@@ -11,6 +11,7 @@ use Vec3f;
 pub struct ScatteringEvent {
     pub r_out: Ray,
     pub attenuation: Vec3f,
+    pub pdf: f32,
 }
 
 pub trait Material {
@@ -44,12 +45,10 @@ impl Material for Diffuse {
         let f = self.albedo * f32::consts::FRAC_1_PI;
         let pdf = out_dir.dot(hit.n).abs() * f32::consts::FRAC_1_PI;
 
-        // Compute attenuation
-        let attenuation = f / pdf;
-
         Some(ScatteringEvent {
             r_out: Ray::new(hit.p + 0.001 * hit.n, out_dir),
-            attenuation,
+            attenuation: f,
+            pdf,
         })
     }
 }
@@ -64,6 +63,7 @@ impl Material for Mirror {
             Some(ScatteringEvent {
                 r_out: Ray::new(hit.p + 0.001 * hit.n, reflect),
                 attenuation: vec3(1.0, 1.0, 1.0),
+                pdf: 1.0,
             })
         } else {
             None
