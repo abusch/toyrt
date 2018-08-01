@@ -1,7 +1,10 @@
+cargo-features = ["edition"]
+
 [package]
 name = "toyrt"
 version = "0.1.0"
 authors = ["Antoine Busch <abusch@atlassian.com>"]
+edition = '2018'
 
 [dependencies]
 cgmath="0.16"

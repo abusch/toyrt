@@ -1,10 +1,10 @@
 use std::f32;
 
-use cg::prelude::*;
+use crate::cg::prelude::*;
 use rand::{self, Rng};
 
-use ray::Ray;
-use {Point3f, Vec3f};
+use crate::ray::Ray;
+use crate::{Point3f, Vec3f};
 
 pub struct Camera {
     origin: Point3f,

@@ -1,6 +1,6 @@
-use cg::{self, prelude::*};
+use crate::cg::{self, prelude::*};
 
-use {Matrix4f, Point3f, Vec3f};
+use crate::{Matrix4f, Point3f, Vec3f};
 
 #[derive(Debug, Copy, Clone)]
 pub struct Transform {

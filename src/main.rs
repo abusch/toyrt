@@ -17,15 +17,15 @@ use std::fs::File;
 use std::io::{BufWriter, Write};
 use std::sync::Arc;
 
-use cg::{prelude::*, vec3};
+use crate::cg::{prelude::*, vec3};
 use minifb::{Key, Window, WindowOptions};
 use rand::Rng;
 use rayon::prelude::*;
 
-use camera::Camera;
-use material::*;
-use ray::Ray;
-use shape::*;
+use crate::camera::Camera;
+use crate::material::*;
+use crate::ray::Ray;
+use crate::shape::*;
 
 type Vec3f = cg::Vector3<f32>;
 type Point3f = cg::Point3<f32>;

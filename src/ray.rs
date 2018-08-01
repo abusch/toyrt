@@ -1,8 +1,8 @@
 use std::f32;
 
-use cg::prelude::*;
+use crate::cg::prelude::*;
 
-use {Matrix4f, Point3f, Vec3f};
+use crate::{Matrix4f, Point3f, Vec3f};
 
 #[derive(Debug, Clone)]
 pub struct Ray {

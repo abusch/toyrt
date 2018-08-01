@@ -1,11 +1,11 @@
 use std::f32;
 
-use cg::{prelude::*, vec3};
+use crate::cg::{prelude::*, vec3};
 use rand::{self, Rng};
 
-use ray::Ray;
-use shape::*;
-use Vec3f;
+use crate::ray::Ray;
+use crate::shape::*;
+use crate::Vec3f;
 
 #[derive(Debug)]
 pub struct ScatteringEvent {

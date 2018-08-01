@@ -1,10 +1,10 @@
 use std::sync::Arc;
 
-use cg::prelude::*;
-use material::Material;
-use ray::Ray;
-use transform::Transform;
-use {Point3f, Vec3f};
+use crate::cg::prelude::*;
+use crate::material::Material;
+use crate::ray::Ray;
+use crate::transform::Transform;
+use crate::{Point3f, Vec3f};
 
 #[derive(Clone)]
 pub struct Hit {
