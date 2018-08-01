@@ -1,3 +1,4 @@
+#![feature(rust_2018_preview)]
 #![feature(core_intrinsics)]
 #![cfg_attr(feature = "cargo-clippy", allow(too_many_arguments, many_single_char_names))]
 extern crate cgmath as cg;
