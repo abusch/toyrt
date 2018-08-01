@@ -1,6 +1,6 @@
 use std::f32;
 
-use crate::cg::{prelude::*, vec3};
+use cg::{prelude::*, vec3};
 use rand::{self, Rng};
 
 use crate::ray::Ray;

@@ -1,6 +1,6 @@
 use std::f32;
 
-use crate::cg::prelude::*;
+use cg::prelude::*;
 
 use crate::{Matrix4f, Point3f, Vec3f};
 

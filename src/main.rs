@@ -1,11 +1,6 @@
 #![feature(rust_2018_preview)]
 #![feature(core_intrinsics)]
 #![cfg_attr(feature = "cargo-clippy", allow(too_many_arguments, many_single_char_names))]
-extern crate cgmath as cg;
-extern crate minifb;
-extern crate rand;
-extern crate rayon;
-
 mod camera;
 mod material;
 mod ray;
@@ -17,7 +12,7 @@ use std::fs::File;
 use std::io::{BufWriter, Write};
 use std::sync::Arc;
 
-use crate::cg::{prelude::*, vec3};
+use cg::{prelude::*, vec3};
 use minifb::{Key, Window, WindowOptions};
 use rand::Rng;
 use rayon::prelude::*;

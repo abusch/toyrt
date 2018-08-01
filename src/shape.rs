@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::cg::prelude::*;
+use cg::prelude::*;
 use crate::material::Material;
 use crate::ray::Ray;
 use crate::transform::Transform;

@@ -1,4 +1,4 @@
-use crate::cg::{self, prelude::*};
+use cg::{self, prelude::*};
 
 use crate::{Matrix4f, Point3f, Vec3f};
 
